@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class JdbcUserDao implements UserDao {
@@ -43,6 +45,17 @@ public class JdbcUserDao implements UserDao {
             users.add(user);
         }
         return users;
+    }
+
+    @Override
+    public Map<Long, String> findAllUsernames() {
+        List<User> users = findAll();
+        Map<Long, String> mappedUsers = new HashMap<>();
+        for (User user : users) {
+            String value = user.getUsername();
+            long key = user.getId();
+            mappedUsers.put(key, value);
+        } return mappedUsers;
     }
 
     @Override
@@ -88,4 +101,11 @@ public class JdbcUserDao implements UserDao {
         user.setAuthorities("USER");
         return user;
     }
+
+//    private User mapRowToAllUsers(SqlRowSet rs) {
+//        User user = new User();
+//        user.setId(rs.getLong("user_id"));
+//        user.setUsername(rs.getString("username"));
+//        return user;
+//    }
 }
