@@ -6,9 +6,11 @@ import com.techelevator.tenmo.model.User;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
+import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
@@ -31,11 +33,18 @@ public class TEnmoController {
     }
 
 
-//    // display user's current balance
-//    @RequestMapping(value = "/account", method = RequestMethod.GET)
-//    public BigDecimal userBalance(Principal principal) {
-//        Principal.
-//    }
+    // display user's current balance
+    @RequestMapping(value = "/balance", method = RequestMethod.GET)
+    public BigDecimal userBalance(Principal principal) {
+        return userDao.getBalance(principal.getName());
+
+    }
+
+    @RequestMapping(path = "/whoami")
+    public String whoAmI(Principal principal) {
+
+        return principal.getName();
+    }
 
 //
 //
