@@ -1,16 +1,20 @@
 package com.techelevator.tenmo;
 
 
-
 import com.techelevator.tenmo.model.AuthenticatedUser;
 import com.techelevator.tenmo.model.UserCredentials;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.ConsoleService;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 
 public class App {
 
@@ -20,6 +24,8 @@ public class App {
     private final AuthenticationService authenticationService = new AuthenticationService(API_BASE_URL);
     private final RestTemplate restTemplate = new RestTemplate();
     private AuthenticatedUser currentUser;
+
+    Scanner scanner = new Scanner(System.in);
 
 
     public static void main(String[] args) {
@@ -34,6 +40,7 @@ public class App {
             mainMenu();
         }
     }
+
     private void loginMenu() {
         int menuSelection = -1;
         while (menuSelection != 0 && currentUser == null) {
@@ -92,7 +99,7 @@ public class App {
         }
     }
 
-	private void viewCurrentBalance() {
+    private void viewCurrentBalance() {
         // TODO Auto-generated method stub
         try {
             BigDecimal balance = restTemplate.getForObject(API_BASE_URL + "user/balance/" + currentUser.getUser().getId(), BigDecimal.class);
@@ -105,24 +112,56 @@ public class App {
 
     }
 
-	private void viewTransferHistory() {
-		// TODO Auto-generated method stub
-		
-	}
+    private void viewTransferHistory() {
+        // TODO Auto-generated method stub
 
-	private void viewPendingRequests() {
-		// TODO Auto-generated method stub
-		
-	}
+    }
 
-	private void sendBucks() {
-		// TODO Auto-generated method stub
-		
-	}
+    private void viewPendingRequests() {
+        // TODO Auto-generated method stub
 
-	private void requestBucks() {
-		// TODO Auto-generated method stub
-		
-	}
+    }
+
+    private void sendBucks() {
+        // TODO Auto-generated method stub
+        try {
+            Map<Long, String> mappedUsers = restTemplate.getForObject(API_BASE_URL + "/user", HashMap.class);
+            System.out.println("------------------------------------");
+            System.out.println("User");
+            System.out.println("ID\t Name");
+            System.out.println("------------------------------------");
+            for (Map.Entry<Long, String> user : mappedUsers.entrySet()) {
+                System.out.println(user.getKey() + "\t" + user.getValue());
+            }
+            System.out.println("------------------------------------");
+            System.out.println("Enter ID of user you are sending to (0 to cancel): ");
+            String userId = scanner.nextLine();
+            System.out.println("Enter amount: ");
+            String amount = scanner.nextLine();
+            BigDecimal transferAmount = new BigDecimal(amount);
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setBearerAuth(currentUser.getToken());
+                HttpEntity entity = new HttpEntity(headers);
+            restTemplate.put(API_BASE_URL + "user/" + currentUser.getUser().getId()
+                    + "/transfer/" + userId + "/" + transferAmount, entity);
+        } catch (RestClientException e) {
+            consoleService.printErrorMessage();
+        }
+    }
+
+
+    private void requestBucks() {
+        // TODO Auto-generated method stub
+
+    }
 
 }
+
+// System.out.println("------------------------------------");
+//         System.out.println("------------------------------------");
+//         System.out.println("------------------------------------");
+//         System.out.println("------------------------------------");
+//         System.out.println("------------------------------------");
+//         System.out.println("------------------------------------");
+//         System.out.println("------------------------------------");

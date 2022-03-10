@@ -41,7 +41,7 @@ public class JdbcUserDao implements UserDao {
         List<User> users = new ArrayList<>();
         String sql = "SELECT user_id, username, password_hash FROM tenmo_user;";
         SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
-        while(results.next()) {
+        while (results.next()) {
             User user = mapRowToUser(results);
             users.add(user);
         }
@@ -56,14 +56,15 @@ public class JdbcUserDao implements UserDao {
             String value = user.getUsername();
             long key = user.getId();
             mappedUsers.put(key, value);
-        } return mappedUsers;
+        }
+        return mappedUsers;
     }
 
     @Override
     public User findByUsername(String username) throws UsernameNotFoundException {
         String sql = "SELECT user_id, username, password_hash FROM tenmo_user WHERE username ILIKE ?;";
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, username);
-        if (rowSet.next()){
+        if (rowSet.next()) {
             return mapRowToUser(rowSet);
         }
         throw new UsernameNotFoundException("User " + username + " was not found.");
@@ -97,7 +98,6 @@ public class JdbcUserDao implements UserDao {
     public BigDecimal getBalance(long id) {
         String sql = "SELECT balance " +
                 "FROM account " +
-//                "JOIN tenmo_user on tenmo_user.user_id = account.user_id " +
                 "WHERE user_id = ?";
         BigDecimal balance = jdbcTemplate.queryForObject(sql, BigDecimal.class, id);
 
@@ -108,6 +108,19 @@ public class JdbcUserDao implements UserDao {
     public String getPrincipal(Principal principal) {
         return principal.getName();
     }
+
+    @Override
+    // TODO Add SQL to update transfer table
+    public void transferTo(long id, long targetId, BigDecimal amount) {
+        String sql = "UPDATE account " +
+                "SET balance = balance - ? " +
+                "WHERE user_id = ?; " +
+                "UPDATE account " +
+                "SET balance = balance + ? " +
+                "WHERE user_id = ?;";
+        jdbcTemplate.update(sql, amount, id, amount, targetId);
+    }
+
     private User mapRowToUser(SqlRowSet rs) {
         User user = new User();
         user.setId(rs.getLong("user_id"));
@@ -118,10 +131,4 @@ public class JdbcUserDao implements UserDao {
         return user;
     }
 
-//    private User mapRowToAllUsers(SqlRowSet rs) {
-//        User user = new User();
-//        user.setId(rs.getLong("user_id"));
-//        user.setUsername(rs.getString("username"));
-//        return user;
-//    }
 }
