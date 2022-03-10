@@ -3,12 +3,12 @@ package com.techelevator.tenmo.controller;
 import com.techelevator.tenmo.TenmoApplication;
 import com.techelevator.tenmo.dao.UserDao;
 import com.techelevator.tenmo.model.User;
+import com.techelevator.tenmo.security.UserNotActivatedException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +19,7 @@ import java.util.Map;
 public class TEnmoController {
 
     private UserDao userDao;
+    private User user;
 
     public TEnmoController(UserDao userDao) {
         this.userDao = userDao;
@@ -31,11 +32,17 @@ public class TEnmoController {
     }
 
 
-//    // display user's current balance
-//    @RequestMapping(value = "/account", method = RequestMethod.GET)
-//    public BigDecimal userBalance(Principal principal) {
-//        Principal.
-//    }
+    // display user's current balance
+    @RequestMapping(value = "/balance/{id}", method = RequestMethod.GET)
+    public BigDecimal userBalance(@PathVariable long id) throws UserNotActivatedException {
+        return userDao.getBalance(id);
+    }
+
+    @RequestMapping(path = "/whoami")
+    public String whoAmI(Principal principal) {
+
+        return principal.getName();
+    }
 
 //
 //

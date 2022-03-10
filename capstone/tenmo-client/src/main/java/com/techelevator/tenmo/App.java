@@ -1,9 +1,16 @@
 package com.techelevator.tenmo;
 
+
+
 import com.techelevator.tenmo.model.AuthenticatedUser;
 import com.techelevator.tenmo.model.UserCredentials;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.ConsoleService;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
+
+
+import java.math.BigDecimal;
 
 public class App {
 
@@ -11,8 +18,9 @@ public class App {
 
     private final ConsoleService consoleService = new ConsoleService();
     private final AuthenticationService authenticationService = new AuthenticationService(API_BASE_URL);
-
+    private final RestTemplate restTemplate = new RestTemplate();
     private AuthenticatedUser currentUser;
+
 
     public static void main(String[] args) {
         App app = new App();
@@ -85,9 +93,17 @@ public class App {
     }
 
 	private void viewCurrentBalance() {
-		// TODO Auto-generated method stub
-		
-	}
+        // TODO Auto-generated method stub
+        try {
+            BigDecimal balance = restTemplate.getForObject(API_BASE_URL + "user/balance/" + currentUser.getUser().getId(), BigDecimal.class);
+            System.out.println("------------------------------------");
+            System.out.println("Your current balance is: $" + balance);
+            System.out.println("------------------------------------");
+        } catch (RestClientException e) {
+            consoleService.printErrorMessage();
+        }
+
+    }
 
 	private void viewTransferHistory() {
 		// TODO Auto-generated method stub

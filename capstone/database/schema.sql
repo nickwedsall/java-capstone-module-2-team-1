@@ -1,6 +1,6 @@
 BEGIN TRANSACTION;
 
-DROP TABLE IF EXISTS transfer, account, tenmo_user, transfer_type, transfer_status;
+--DROP TABLE IF EXISTS transfer, account, tenmo_user, transfer_type, transfer_status;
 DROP SEQUENCE IF EXISTS seq_user_id, seq_account_id, seq_transfer_id;
 
 
