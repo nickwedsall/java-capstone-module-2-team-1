@@ -94,12 +94,12 @@ public class JdbcUserDao implements UserDao {
     }
 
     @Override
-    public BigDecimal getBalance(String username) {
+    public BigDecimal getBalance(long id) {
         String sql = "SELECT balance " +
                 "FROM account " +
-                "JOIN tenmo_user on tenmo_user.user_id = account.user_id " +
-                "WHERE username = ?";
-        BigDecimal balance = jdbcTemplate.queryForObject(sql, BigDecimal.class, username);
+//                "JOIN tenmo_user on tenmo_user.user_id = account.user_id " +
+                "WHERE user_id = ?";
+        BigDecimal balance = jdbcTemplate.queryForObject(sql, BigDecimal.class, id);
 
         return balance;
     }

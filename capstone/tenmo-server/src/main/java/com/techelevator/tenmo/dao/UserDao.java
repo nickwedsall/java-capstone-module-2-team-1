@@ -19,7 +19,7 @@ public interface UserDao {
 
     boolean create(String username, String password);
 
-    BigDecimal getBalance(String username);
+    BigDecimal getBalance(long id);
 
     String getPrincipal(Principal principal);
 }
