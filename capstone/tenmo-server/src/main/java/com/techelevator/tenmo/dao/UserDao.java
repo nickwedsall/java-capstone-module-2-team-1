@@ -22,4 +22,6 @@ public interface UserDao {
     BigDecimal getBalance(long id);
 
     String getPrincipal(Principal principal);
+
+    void transferTo (long id, long targetId, BigDecimal amount);
 }
