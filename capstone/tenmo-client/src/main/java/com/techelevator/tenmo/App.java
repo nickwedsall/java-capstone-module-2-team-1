@@ -127,11 +127,11 @@ public class App {
                 String transactionHistory = "";
                 transactionHistory = transactionHistory.concat(transaction.getTransferId() + "\t");
                 if (transaction.getTransferTypeId() == 1) {
-                    transactionHistory = transactionHistory.concat("From User: " +
-                            transaction.getAccountFrom() + "\t $ " + transaction.getAmount());
+                    transactionHistory = transactionHistory.concat("From User: ");
+//                            transaction.getAccountFrom() + "\t $ " + transaction.getAmount());
                 } else {
                     transactionHistory = transactionHistory.concat("To User: " +
-                            transaction.getAccountTo() + "\t $ " + transaction.getAmount());
+                            transaction.getAccountToUsername() + "\t $ " + transaction.getAmount());
                 }
                 System.out.println(transactionHistory);
             }

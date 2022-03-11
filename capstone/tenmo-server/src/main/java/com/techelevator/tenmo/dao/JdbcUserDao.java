@@ -101,7 +101,6 @@ public class JdbcUserDao implements UserDao {
                 "FROM account " +
                 "WHERE user_id = ?";
         BigDecimal balance = jdbcTemplate.queryForObject(sql, BigDecimal.class, id);
-
         return balance;
     }
 
@@ -126,13 +125,14 @@ public class JdbcUserDao implements UserDao {
     }
 /* TODO add Joins - tenmo_user, account, transfer; hopefully result in username = callable in client sout
       redo transaction models to match SQL variables    */
-    
+
     @Override
     public List<Transaction> getLog (long id) {
-        String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
-                "FROM transfer " +
-//                "JOIN tenmo_user ON
-                "WHERE ";
+        String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, tenmo_user.username AS account_to_user, amount " +
+        "FROM transfer " +
+        "JOIN account ON account.account_id = transfer.account_from " +
+        "JOIN tenmo_user ON account.user_id = tenmo_user.user_id " +
+        "WHERE transfer.account_from = (SELECT account_id FROM account WHERE user_id = ?);";
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, id);
         List<Transaction> transactions = new ArrayList<>();
         if (rowSet.next()) {
@@ -160,8 +160,8 @@ public class JdbcUserDao implements UserDao {
         transaction.setTransferTypeId(rs.getInt("transfer_type_id"));
         transaction.setTransferStatusId(rs.getInt("transfer_status_id"));
         transaction.setAccountFrom(rs.getInt("account_from"));
-        transaction.setAccountTo(rs.getInt("account_to"));
-        transaction.setAmount(rs.getInt("amount"));
+        transaction.setAccountToUsername(rs.getString("account_to_user"));
+        transaction.setAmount(rs.getBigDecimal("amount"));
         return transaction;
     }
 
