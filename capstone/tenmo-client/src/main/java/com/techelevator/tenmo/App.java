@@ -5,6 +5,8 @@ import com.techelevator.tenmo.model.AuthenticatedUser;
 import com.techelevator.tenmo.model.UserCredentials;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.ConsoleService;
+import com.techelevator.util.InvalidUserException;
+import jdk.jshell.spi.ExecutionControl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.client.RestClientException;
@@ -24,9 +26,10 @@ public class App {
     private final AuthenticationService authenticationService = new AuthenticationService(API_BASE_URL);
     private final RestTemplate restTemplate = new RestTemplate();
     private AuthenticatedUser currentUser;
+    private String userId = "";
+    private String amount = "";
 
     Scanner scanner = new Scanner(System.in);
-
 
     public static void main(String[] args) {
         App app = new App();
@@ -100,7 +103,6 @@ public class App {
     }
 
     private void viewCurrentBalance() {
-        // TODO Auto-generated method stub
         try {
             BigDecimal balance = restTemplate.getForObject(API_BASE_URL + "user/balance/" + currentUser.getUser().getId(), BigDecimal.class);
             System.out.println("------------------------------------");
@@ -123,28 +125,62 @@ public class App {
     }
 
     private void sendBucks() {
-        // TODO Auto-generated method stub
+        // TODO create exception for string entry in place of $ in send; copy for request
+        // TODO check validity of user ID's when prompted to send buck to ID (valid user id exception)
         try {
-            Map<Long, String> mappedUsers = restTemplate.getForObject(API_BASE_URL + "/user", HashMap.class);
-            System.out.println("------------------------------------");
-            System.out.println("User");
-            System.out.println("ID\t Name");
-            System.out.println("------------------------------------");
-            for (Map.Entry<Long, String> user : mappedUsers.entrySet()) {
-                System.out.println(user.getKey() + "\t" + user.getValue());
-            }
-            System.out.println("------------------------------------");
-            System.out.println("Enter ID of user you are sending to (0 to cancel): ");
-            String userId = scanner.nextLine();
-            System.out.println("Enter amount: ");
-            String amount = scanner.nextLine();
-            BigDecimal transferAmount = new BigDecimal(amount);
+            BigDecimal currentBalance = restTemplate.getForObject(API_BASE_URL + "user/balance/" + currentUser.getUser().getId(), BigDecimal.class);
+            if (currentBalance.compareTo(BigDecimal.valueOf(0)) <= 0) {
+                System.out.println("You broke, broke. You don't have any TE bucks to send!");
+            } else {
+                Map<Long, String> mappedUsers = restTemplate.getForObject(API_BASE_URL + "/user", HashMap.class);
+                System.out.println("------------------------------------");
+                System.out.println("User");
+                System.out.println("ID\t\t Name");
+                System.out.println("------------------------------------");
+                for (Map.Entry<Long, String> user : mappedUsers.entrySet()) {
+                    System.out.println(user.getKey() + "\t" + user.getValue());
+                }
+                System.out.println("------------------------------------");
+                System.out.print("Enter ID of user you are sending TE bucks to (0 to cancel): ");
+                userId = scanner.nextLine();
+                while (userId.equals("")) {
+                    System.out.print("Please enter a valid user ID: ");
+                    userId = scanner.nextLine();
+                }
+                if (userId.equals("0")) {
+                    System.out.println("Your transaction was cancelled");
+                } else {
+//                    userId = scanner.nextLine();
+                    while (Long.parseLong(userId) == currentUser.getUser().getId()) {
+                        System.out.print("Please select a valid user, other than yourself: ");
+                        userId = scanner.nextLine();
+                    }
+                    System.out.print("Enter the of amount of TE bucks you'd like to send: ");
+                    amount = scanner.nextLine();
+                    while (amount.equals("")) {
+                        System.out.print("Please enter a valid amount: ");
+                        amount = scanner.nextLine();
+                    }
+//                    amount = scanner.nextLine();
+                    BigDecimal transferAmount = new BigDecimal(amount);
+                    if (transferAmount.compareTo(BigDecimal.valueOf(0)) < 0) {
+                        System.out.println("You cannot send a negative value. ");
+                    } else {
+                        while (transferAmount.compareTo(currentBalance) > 0) {
+                            System.out.println("You cannot send more than your current balance of: " + currentBalance);
+                            System.out.print("Please enter the of amount of TE bucks you'd like to send: ");
+                            transferAmount = scanner.nextBigDecimal();
+                        }
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setBearerAuth(currentUser.getToken());
+                        HttpEntity entity = new HttpEntity(headers);
+                        restTemplate.put(API_BASE_URL + "user/" + currentUser.getUser().getId()
+                                + "/transfer/" + userId + "/" + transferAmount, entity);
+                        System.out.println("Transaction complete. Thank you!");
+                    }
 
-                HttpHeaders headers = new HttpHeaders();
-                headers.setBearerAuth(currentUser.getToken());
-                HttpEntity entity = new HttpEntity(headers);
-            restTemplate.put(API_BASE_URL + "user/" + currentUser.getUser().getId()
-                    + "/transfer/" + userId + "/" + transferAmount, entity);
+                }
+            }
         } catch (RestClientException e) {
             consoleService.printErrorMessage();
         }
