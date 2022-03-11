@@ -1,5 +1,7 @@
 package com.techelevator.tenmo.dao;
 
+import com.techelevator.tenmo.model.Transaction;
+import com.techelevator.tenmo.model.TransactionList;
 import com.techelevator.tenmo.model.User;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -100,7 +102,6 @@ public class JdbcUserDao implements UserDao {
                 "FROM account " +
                 "WHERE user_id = ?";
         BigDecimal balance = jdbcTemplate.queryForObject(sql, BigDecimal.class, id);
-
         return balance;
     }
 
@@ -110,16 +111,44 @@ public class JdbcUserDao implements UserDao {
     }
 
     @Override
-    // TODO Add SQL to update transfer table
     public void transferTo(long id, long targetId, BigDecimal amount) {
         String sql = "UPDATE account " +
                 "SET balance = balance - ? " +
                 "WHERE user_id = ?; " +
                 "UPDATE account " +
                 "SET balance = balance + ? " +
-                "WHERE user_id = ?;";
-        jdbcTemplate.update(sql, amount, id, amount, targetId);
+                "WHERE user_id = ?; " +
+                "INSERT INTO transfer (transfer_type_id, transfer_status_id, " +
+                "account_from, account_to, amount) " +
+                "VALUES (2, 2, (SELECT account_id FROM account WHERE user_id = ?), " +
+                "(SELECT account_id FROM account WHERE user_id = ?), ?) ;";
+        jdbcTemplate.update(sql, amount, id, amount, targetId, id, targetId, amount);
     }
+/* TODO add Joins - tenmo_user, account, transfer; hopefully result in username = callable in client sout
+      redo transaction models to match SQL variables    */
+
+    @Override
+    public TransactionList getLog (long id) {
+        List<Transaction> transactions = new ArrayList<>();
+        String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, tenmo_user.username AS account_to_user, amount " +
+        "FROM transfer " +
+        "JOIN account ON account.account_id = transfer.account_from " +
+        "JOIN tenmo_user ON account.user_id = tenmo_user.user_id " +
+        "WHERE transfer.account_from = (SELECT account_id FROM account WHERE user_id = ?);";
+        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, id);
+
+//        TransactionList transactionlist = new TransactionList();
+        if (rowSet.next()) {
+            transactions.add(mapRowToTransaction(rowSet));
+
+//            for (Transaction transaction : transactions) {
+//                transactions.add(transaction);
+            } TransactionList transactionList = new TransactionList();
+            transactionList.setTransactions(transactions);
+
+        return transactionList;
+    }
+
 
     private User mapRowToUser(SqlRowSet rs) {
         User user = new User();
@@ -129,6 +158,17 @@ public class JdbcUserDao implements UserDao {
         user.setActivated(true);
         user.setAuthorities("USER");
         return user;
+    }
+
+    private Transaction mapRowToTransaction(SqlRowSet rs) {
+        Transaction transaction = new Transaction();
+        transaction.setTransferId(rs.getInt("transfer_id"));
+        transaction.setTransferTypeId(rs.getInt("transfer_type_id"));
+        transaction.setTransferStatusId(rs.getInt("transfer_status_id"));
+        transaction.setAccountFrom(rs.getInt("account_from"));
+        transaction.setAccountToUsername(rs.getString("account_to_user"));
+        transaction.setAmount(rs.getBigDecimal("amount"));
+        return transaction;
     }
 
 }
