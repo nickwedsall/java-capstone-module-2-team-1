@@ -1,6 +1,7 @@
 package com.techelevator.tenmo.dao;
 
 import com.techelevator.tenmo.model.Transaction;
+import com.techelevator.tenmo.model.TransactionList;
 import com.techelevator.tenmo.model.User;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -127,20 +128,25 @@ public class JdbcUserDao implements UserDao {
       redo transaction models to match SQL variables    */
 
     @Override
-    public List<Transaction> getLog (long id) {
+    public TransactionList getLog (long id) {
+        List<Transaction> transactions = new ArrayList<>();
         String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, tenmo_user.username AS account_to_user, amount " +
         "FROM transfer " +
         "JOIN account ON account.account_id = transfer.account_from " +
         "JOIN tenmo_user ON account.user_id = tenmo_user.user_id " +
         "WHERE transfer.account_from = (SELECT account_id FROM account WHERE user_id = ?);";
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, id);
-        List<Transaction> transactions = new ArrayList<>();
+
+//        TransactionList transactionlist = new TransactionList();
         if (rowSet.next()) {
-            mapRowToTransaction(rowSet);
-            for (Transaction transaction : transactions) {
-                transactions.add(transaction);
-            }
-        }  return transactions;
+            transactions.add(mapRowToTransaction(rowSet));
+
+//            for (Transaction transaction : transactions) {
+//                transactions.add(transaction);
+            } TransactionList transactionList = new TransactionList();
+            transactionList.setTransactions(transactions);
+
+        return transactionList;
     }
 
 

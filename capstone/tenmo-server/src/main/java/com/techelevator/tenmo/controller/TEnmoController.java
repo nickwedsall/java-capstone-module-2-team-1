@@ -3,6 +3,7 @@ package com.techelevator.tenmo.controller;
 import com.techelevator.tenmo.TenmoApplication;
 import com.techelevator.tenmo.dao.UserDao;
 import com.techelevator.tenmo.model.Transaction;
+import com.techelevator.tenmo.model.TransactionList;
 import com.techelevator.tenmo.model.User;
 import com.techelevator.tenmo.security.UserNotActivatedException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -46,7 +47,7 @@ public class TEnmoController {
     }
     // Prints log of a user's transactions
     @RequestMapping(value = "/{id}/log", method = RequestMethod.GET)
-    public List<Transaction> getUserLog(@PathVariable long id) throws UsernameNotFoundException {
+    public TransactionList getUserLog(@PathVariable long id) throws UsernameNotFoundException {
         return userDao.getLog(id);
     }
 

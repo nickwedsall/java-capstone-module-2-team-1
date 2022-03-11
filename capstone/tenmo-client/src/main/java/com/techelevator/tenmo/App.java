@@ -3,6 +3,7 @@ package com.techelevator.tenmo;
 
 import com.techelevator.tenmo.model.AuthenticatedUser;
 import com.techelevator.tenmo.model.Transaction;
+import com.techelevator.tenmo.model.TransactionList;
 import com.techelevator.tenmo.model.UserCredentials;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.ConsoleService;
@@ -114,26 +115,35 @@ public class App {
     }
 
     //TODO add "Please enter transfer ID to view details (0 to cancel): "" below
-    //TODO switch userId to username in souts
+    
     private void viewTransferHistory() {
         try {
+            TransactionList transactionList = restTemplate.getForObject(API_BASE_URL + "user/" + currentUser.getUser().getId() + "/log", TransactionList.class);
             List<Transaction> transactions = new ArrayList<>();
-            transactions.add(restTemplate.getForObject(API_BASE_URL + "user/" + currentUser.getUser().getId() + "/log", Transaction.class));
+////            for(TransactionList transactionList: transactions ) {
+////                    transactions.add(transactions);
+////                }
+//////            }
             System.out.println("------------------------------------");
             System.out.println("Transfers");
-            System.out.println("ID\tFrom/To\tAmount");
+            System.out.println("ID  \t From/To  \t  Amount");
             System.out.println("------------------------------------");
-            for (Transaction transaction : transactions) {
-                String transactionHistory = "";
-                transactionHistory = transactionHistory.concat(transaction.getTransferId() + "\t");
-                if (transaction.getTransferTypeId() == 1) {
-                    transactionHistory = transactionHistory.concat("From User: ");
+
+            if (transactionList != null) {
+
+                transactions = transactionList.getTransactions();
+                for (Transaction transaction : transactions) {
+                    String transactionHistory = "";
+                    transactionHistory = transactionHistory.concat(transaction.getTransferId() + "\t");
+                    if (transaction.getTransferTypeId() == 1) {
+                        transactionHistory = transactionHistory.concat("From User: ");
 //                            transaction.getAccountFrom() + "\t $ " + transaction.getAmount());
-                } else {
-                    transactionHistory = transactionHistory.concat("To User: " +
-                            transaction.getAccountToUsername() + "\t $ " + transaction.getAmount());
+                    } else {
+                        transactionHistory = transactionHistory.concat("To User: " +
+                                transaction.getAccountToUsername() + "\t $ " + transaction.getAmount());
+                    }
+                    System.out.println(transactionHistory);
                 }
-                System.out.println(transactionHistory);
             }
         } catch (RestClientException e) {
             consoleService.printErrorMessage();

@@ -1,6 +1,7 @@
 package com.techelevator.tenmo.dao;
 
 import com.techelevator.tenmo.model.Transaction;
+import com.techelevator.tenmo.model.TransactionList;
 import com.techelevator.tenmo.model.User;
 
 import java.math.BigDecimal;
@@ -26,5 +27,5 @@ public interface UserDao {
 
     void transferTo (long id, long targetId, BigDecimal amount);
 
-    List<Transaction> getLog(long id);
+    TransactionList getLog(long id);
 }
