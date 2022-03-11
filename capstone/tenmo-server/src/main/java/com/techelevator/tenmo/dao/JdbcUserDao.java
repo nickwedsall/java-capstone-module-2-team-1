@@ -1,5 +1,6 @@
 package com.techelevator.tenmo.dao;
 
+import com.techelevator.tenmo.model.Transaction;
 import com.techelevator.tenmo.model.User;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -110,16 +111,38 @@ public class JdbcUserDao implements UserDao {
     }
 
     @Override
-    // TODO Add SQL to update transfer table
     public void transferTo(long id, long targetId, BigDecimal amount) {
         String sql = "UPDATE account " +
                 "SET balance = balance - ? " +
                 "WHERE user_id = ?; " +
                 "UPDATE account " +
                 "SET balance = balance + ? " +
-                "WHERE user_id = ?;";
-        jdbcTemplate.update(sql, amount, id, amount, targetId);
+                "WHERE user_id = ?; " +
+                "INSERT INTO transfer (transfer_type_id, transfer_status_id, " +
+                "account_from, account_to, amount) " +
+                "VALUES (2, 2, (SELECT account_id FROM account WHERE user_id = ?), " +
+                "(SELECT account_id FROM account WHERE user_id = ?), ?) ;";
+        jdbcTemplate.update(sql, amount, id, amount, targetId, id, targetId, amount);
     }
+/* TODO add Joins - tenmo_user, account, transfer; hopefully result in username = callable in client sout
+      redo transaction models to match SQL variables    */
+    
+    @Override
+    public List<Transaction> getLog (long id) {
+        String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
+                "FROM transfer " +
+//                "JOIN tenmo_user ON
+                "WHERE ";
+        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, id);
+        List<Transaction> transactions = new ArrayList<>();
+        if (rowSet.next()) {
+            mapRowToTransaction(rowSet);
+            for (Transaction transaction : transactions) {
+                transactions.add(transaction);
+            }
+        }  return transactions;
+    }
+
 
     private User mapRowToUser(SqlRowSet rs) {
         User user = new User();
@@ -129,6 +152,17 @@ public class JdbcUserDao implements UserDao {
         user.setActivated(true);
         user.setAuthorities("USER");
         return user;
+    }
+
+    private Transaction mapRowToTransaction(SqlRowSet rs) {
+        Transaction transaction = new Transaction();
+        transaction.setTransferId(rs.getInt("transfer_id"));
+        transaction.setTransferTypeId(rs.getInt("transfer_type_id"));
+        transaction.setTransferStatusId(rs.getInt("transfer_status_id"));
+        transaction.setAccountFrom(rs.getInt("account_from"));
+        transaction.setAccountTo(rs.getInt("account_to"));
+        transaction.setAmount(rs.getInt("amount"));
+        return transaction;
     }
 
 }

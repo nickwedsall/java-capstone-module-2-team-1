@@ -2,6 +2,7 @@ package com.techelevator.tenmo.controller;
 
 import com.techelevator.tenmo.TenmoApplication;
 import com.techelevator.tenmo.dao.UserDao;
+import com.techelevator.tenmo.model.Transaction;
 import com.techelevator.tenmo.model.User;
 import com.techelevator.tenmo.security.UserNotActivatedException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,10 +41,14 @@ public class TEnmoController {
     }
     // Transfer of TE bucks (authenticated users)
     @RequestMapping(value = "/{id}/transfer/{targetId}/{amount}", method = RequestMethod.PUT)
-    public void transaction(@Valid @PathVariable long id, @PathVariable long targetId, @PathVariable BigDecimal amount) throws UsernameNotFoundException {
+    public void transaction(@PathVariable long id, @PathVariable long targetId, @PathVariable BigDecimal amount) throws UsernameNotFoundException {
         userDao.transferTo(id, targetId, amount);
     }
-
+    // Prints log of a user's transactions
+    @RequestMapping(value = "/{id}/log", method = RequestMethod.GET)
+    public List<Transaction> getUserLog(@PathVariable long id) throws UsernameNotFoundException {
+        return userDao.getLog(id);
+    }
 
 
 //

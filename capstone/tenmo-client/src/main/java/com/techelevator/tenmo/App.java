@@ -2,6 +2,7 @@ package com.techelevator.tenmo;
 
 
 import com.techelevator.tenmo.model.AuthenticatedUser;
+import com.techelevator.tenmo.model.Transaction;
 import com.techelevator.tenmo.model.UserCredentials;
 import com.techelevator.tenmo.services.AuthenticationService;
 import com.techelevator.tenmo.services.ConsoleService;
@@ -14,9 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class App {
 
@@ -114,11 +113,34 @@ public class App {
 
     }
 
+    //TODO add "Please enter transfer ID to view details (0 to cancel): "" below
+    //TODO switch userId to username in souts
     private void viewTransferHistory() {
-        // TODO Auto-generated method stub
-
+        try {
+            List<Transaction> transactions = new ArrayList<>();
+            transactions.add(restTemplate.getForObject(API_BASE_URL + "user/" + currentUser.getUser().getId() + "/log", Transaction.class));
+            System.out.println("------------------------------------");
+            System.out.println("Transfers");
+            System.out.println("ID\tFrom/To\tAmount");
+            System.out.println("------------------------------------");
+            for (Transaction transaction : transactions) {
+                String transactionHistory = "";
+                transactionHistory = transactionHistory.concat(transaction.getTransferId() + "\t");
+                if (transaction.getTransferTypeId() == 1) {
+                    transactionHistory = transactionHistory.concat("From User: " +
+                            transaction.getAccountFrom() + "\t $ " + transaction.getAmount());
+                } else {
+                    transactionHistory = transactionHistory.concat("To User: " +
+                            transaction.getAccountTo() + "\t $ " + transaction.getAmount());
+                }
+                System.out.println(transactionHistory);
+            }
+        } catch (RestClientException e) {
+            consoleService.printErrorMessage();
+        }
     }
 
+    // OPTIONAL
     private void viewPendingRequests() {
         // TODO Auto-generated method stub
 
@@ -186,7 +208,7 @@ public class App {
         }
     }
 
-
+    // OPTIONAL
     private void requestBucks() {
         // TODO Auto-generated method stub
 
