@@ -120,10 +120,10 @@ public class App {
         try {
             TransactionList transactionList = restTemplate.getForObject(API_BASE_URL + "user/" + currentUser.getUser().getId() + "/log", TransactionList.class);
             List<Transaction> transactions = new ArrayList<>();
-////            for(TransactionList transactionList: transactions ) {
-////                    transactions.add(transactions);
-////                }
-//////            }
+//       for(TransactionList transactionList: transactions ) {
+//                   transactions.add(transactions);
+//               }
+//           }
             System.out.println("------------------------------------");
             System.out.println("Transfers");
             System.out.println("ID  \t From/To  \t  Amount");
@@ -132,18 +132,17 @@ public class App {
             if (transactionList != null) {
 
                 transactions = transactionList.getTransactions();
+                String transactionHistory = "";
                 for (Transaction transaction : transactions) {
-                    String transactionHistory = "";
                     transactionHistory = transactionHistory.concat(transaction.getTransferId() + "\t");
                     if (transaction.getTransferTypeId() == 1) {
                         transactionHistory = transactionHistory.concat("From User: ");
 //                            transaction.getAccountFrom() + "\t $ " + transaction.getAmount());
                     } else {
                         transactionHistory = transactionHistory.concat("To User: " +
-                                transaction.getAccountToUsername() + "\t $ " + transaction.getAmount());
+                                transaction.getAccountTo() + "\t $ " + transaction.getAmount() + "\n");
                     }
-                    System.out.println(transactionHistory);
-                }
+                } System.out.println(transactionHistory);
             }
         } catch (RestClientException e) {
             consoleService.printErrorMessage();

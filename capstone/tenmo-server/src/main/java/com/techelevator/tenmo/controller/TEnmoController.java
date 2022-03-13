@@ -8,6 +8,7 @@ import com.techelevator.tenmo.model.User;
 import com.techelevator.tenmo.security.UserNotActivatedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.transaction.TransactionException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -51,6 +52,18 @@ public class TEnmoController {
         return userDao.getLog(id);
     }
 
+    // Print transfer details (step 6)
+    @RequestMapping(value = "/{id}/transfer/{transactionId}", method = RequestMethod.GET)
+    public Transaction transferDetails(@PathVariable long id, @PathVariable long transferId) throws TransactionException {
+       return userDao.getTransferDetails(id, transferId);
+    }
+
+    @RequestMapping( value = "/account/{id}", method = RequestMethod.GET)
+    public String username(@PathVariable long accountId) throws TransactionException {
+        return userDao.getUsername(accountId);
+    }
+
+
 
 //
 //
@@ -67,31 +80,5 @@ public class TEnmoController {
 //    @RequestMapping(value = "/account/transfer")
 //
 
-
-
-
-
-//
-//    public int getBalance() {
-//        return balance;
-//    }
-//
-//    public int deposit(int amountToDeposit) {
-//        balance = balance + amountToDeposit;
-//        return balance;
-//    }
-//
-//    public int withdraw(int amountToWithdraw) {
-//        balance = balance - amountToWithdraw;
-//        return balance;
-//    }
-//
-//    public int transferTo(BankAccount destinationAccount, int transferAmount) {
-//        if (balance >= transferAmount) {
-//            withdraw(transferAmount);
-//            destinationAccount.deposit(transferAmount);
-//        }
-//        return getBalance();
-//    }
 
 }
