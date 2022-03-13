@@ -137,7 +137,7 @@ public class JdbcUserDao implements UserDao {
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, id);
 
 //        TransactionList transactionList = new TransactionList();
-        if (rowSet.next()) {
+        while (rowSet.next()) {
             transactions.add(mapRowToTransaction(rowSet));
 
 //            for (Transaction transaction : transactions) {
@@ -160,7 +160,7 @@ public class JdbcUserDao implements UserDao {
     }
 
     @Override
-    public String getUsername (long accountId) {
+    public String getUsername (int accountId) {
         String sql = "SELECT username " +
         "FROM tenmo_user " +
         "JOIN account ON account.user_id = tenmo_user.user_id " +

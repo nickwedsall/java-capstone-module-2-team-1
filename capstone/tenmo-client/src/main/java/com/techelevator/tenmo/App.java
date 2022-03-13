@@ -140,7 +140,7 @@ public class App {
 //                            transaction.getAccountFrom() + "\t $ " + transaction.getAmount());
                     } else {
                         transactionHistory = transactionHistory.concat("To User: " +
-                                transaction.getAccountTo() + "\t $ " + transaction.getAmount() + "\n");
+                                getUsername(transaction.getAccountTo()) + "\t $ " + transaction.getAmount() + "\n");
                     }
                 } System.out.println(transactionHistory);
             }
@@ -154,6 +154,11 @@ public class App {
         // TODO Auto-generated method stub
 
     }
+    private String getUsername(int accountId) {
+        String username = restTemplate.getForObject(API_BASE_URL + "user/account/" + accountId, String.class);
+        return username;
+    }
+
 
     private void sendBucks() {
         // TODO create exception for string entry in place of $ in send; copy for request

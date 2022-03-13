@@ -58,8 +58,8 @@ public class TEnmoController {
        return userDao.getTransferDetails(id, transferId);
     }
 
-    @RequestMapping( value = "/account/{id}", method = RequestMethod.GET)
-    public String username(@PathVariable long accountId) throws TransactionException {
+    @RequestMapping( value = "/account/{accountId}", method = RequestMethod.GET)
+    public String username(@PathVariable int accountId) throws TransactionException {
         return userDao.getUsername(accountId);
     }
 

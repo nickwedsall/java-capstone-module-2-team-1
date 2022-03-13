@@ -31,5 +31,5 @@ public interface UserDao {
 
     Transaction getTransferDetails(long id, long transferId);
 
-    String getUsername (long accountId);
+    String getUsername (int accountId);
 }
