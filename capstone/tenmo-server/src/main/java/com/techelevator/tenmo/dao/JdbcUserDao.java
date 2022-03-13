@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import javax.swing.tree.TreeNode;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -124,31 +125,66 @@ public class JdbcUserDao implements UserDao {
                 "(SELECT account_id FROM account WHERE user_id = ?), ?) ;";
         jdbcTemplate.update(sql, amount, id, amount, targetId, id, targetId, amount);
     }
-/* TODO add Joins - tenmo_user, account, transfer; hopefully result in username = callable in client sout
-      redo transaction models to match SQL variables    */
 
     @Override
-    public TransactionList getLog (long id) {
+    public TransactionList getLog(long id) {
         List<Transaction> transactions = new ArrayList<>();
-        String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, tenmo_user.username AS account_to_user, amount " +
-        "FROM transfer " +
-        "JOIN account ON account.account_id = transfer.account_from " +
-        "JOIN tenmo_user ON account.user_id = tenmo_user.user_id " +
-        "WHERE transfer.account_from = (SELECT account_id FROM account WHERE user_id = ?);";
+        String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
+                "FROM transfer " +
+                "JOIN account ON account.account_id = transfer.account_from " +
+                "JOIN tenmo_user ON account.user_id = tenmo_user.user_id " +
+                "WHERE transfer.account_from = (SELECT account_id FROM account WHERE user_id = ?);";
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, id);
 
-//        TransactionList transactionlist = new TransactionList();
-        if (rowSet.next()) {
+//        TransactionList transactionList = new TransactionList();
+        while (rowSet.next()) {
             transactions.add(mapRowToTransaction(rowSet));
 
 //            for (Transaction transaction : transactions) {
 //                transactions.add(transaction);
-            } TransactionList transactionList = new TransactionList();
-            transactionList.setTransactions(transactions);
+        }
+        TransactionList transactionList = new TransactionList();
+        transactionList.setTransactions(transactions);
+
+        sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
+                "FROM transfer " +
+                "JOIN account ON account.account_id = transfer.account_to " +
+                "JOIN tenmo_user ON account.user_id = tenmo_user.user_id " +
+                "WHERE transfer.account_to = (SELECT account_id FROM account WHERE user_id = ?);";
+        rowSet = jdbcTemplate.queryForRowSet(sql, id);
+
+//        TransactionList transactionList = new TransactionList();
+        while (rowSet.next()) {
+            transactions.add(mapRowToTransaction(rowSet));
+
+//            for (Transaction transaction : transactions) {
+//                transactions.add(transaction);
+        }
+        transactionList.setTransactions(transactions);
 
         return transactionList;
     }
 
+    @Override
+    public Transaction getTransferDetails(long id, long transferId) {
+        String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, tenmo_user.username AS account_to_user, amount " +
+                "FROM transfer " +
+                "JOIN account ON account.account_id = transfer.account_from " +
+                "JOIN tenmo_user ON account.user_id = tenmo_user.user_id " +
+                "WHERE transfer_id = ?;";
+        Transaction transaction = jdbcTemplate.queryForObject(sql, Transaction.class, transferId);
+        return transaction;
+    }
+
+    @Override
+    public String getUsername(int accountId) {
+        String sql = "SELECT username " +
+                "FROM tenmo_user " +
+                "JOIN account ON account.user_id = tenmo_user.user_id " +
+                "WHERE account_id = ?;";
+        String username = jdbcTemplate.queryForObject(sql, String.class, accountId);
+        return username;
+    }
 
     private User mapRowToUser(SqlRowSet rs) {
         User user = new User();
@@ -166,7 +202,7 @@ public class JdbcUserDao implements UserDao {
         transaction.setTransferTypeId(rs.getInt("transfer_type_id"));
         transaction.setTransferStatusId(rs.getInt("transfer_status_id"));
         transaction.setAccountFrom(rs.getInt("account_from"));
-        transaction.setAccountToUsername(rs.getString("account_to_user"));
+        transaction.setAccountTo(rs.getInt("account_to"));
         transaction.setAmount(rs.getBigDecimal("amount"));
         return transaction;
     }

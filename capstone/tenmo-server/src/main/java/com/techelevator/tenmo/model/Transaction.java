@@ -10,15 +10,15 @@ public class Transaction {
     private int transferTypeId;
     private int transferStatusId;
     private int accountFrom;
-    private String accountToUsername;
+    private int accountTo;
     private BigDecimal amount;
 
 
-    public Transaction(int transferId, int transferTypeId, int accountFrom, String accountToUsername, BigDecimal amount) {
+    public Transaction(int transferId, int transferTypeId, int accountFrom, int accountTo, BigDecimal amount) {
         this.transferId = transferId;
         this.transferTypeId = transferTypeId;
         this.accountFrom = accountFrom;
-        this.accountToUsername = accountToUsername;
+        this.accountTo = accountTo;
         this.amount = amount;
     }
 
@@ -54,12 +54,12 @@ public class Transaction {
         this.accountFrom = accountFrom;
     }
 
-    public String getAccountToUsername() {
-        return accountToUsername;
+    public int getAccountTo() {
+        return accountTo;
     }
 
-    public void setAccountToUsername(String accountToUsername) {
-        this.accountToUsername = accountToUsername;
+    public void setAccountTo(int accountTo) {
+        this.accountTo = accountTo;
     }
 
     public BigDecimal getAmount() {

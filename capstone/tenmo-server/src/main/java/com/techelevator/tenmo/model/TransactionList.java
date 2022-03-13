@@ -7,12 +7,12 @@ public class TransactionList {
 
     private List<Transaction> transactions;
 
-    public TransactionList(List <Transaction> transactions) {
+    public TransactionList(List<Transaction> transactions) {
         this.transactions = new ArrayList<>();
     }
 
-
-    public TransactionList(){}
+    public TransactionList() {
+    }
 
     public List<Transaction> getTransactions() {
         return transactions;

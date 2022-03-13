@@ -28,4 +28,8 @@ public interface UserDao {
     void transferTo (long id, long targetId, BigDecimal amount);
 
     TransactionList getLog(long id);
+
+    Transaction getTransferDetails(long id, long transferId);
+
+    String getUsername (int accountId);
 }
