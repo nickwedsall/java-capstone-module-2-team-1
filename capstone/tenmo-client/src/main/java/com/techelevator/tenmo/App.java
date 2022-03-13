@@ -115,7 +115,7 @@ public class App {
     }
 
     //TODO add "Please enter transfer ID to view details (0 to cancel): "" below
-    
+
     private void viewTransferHistory() {
         try {
             TransactionList transactionList = restTemplate.getForObject(API_BASE_URL + "user/" + currentUser.getUser().getId() + "/log", TransactionList.class);
@@ -135,14 +135,15 @@ public class App {
                 String transactionHistory = "";
                 for (Transaction transaction : transactions) {
                     transactionHistory = transactionHistory.concat(transaction.getTransferId() + "\t");
-                    if (transaction.getTransferTypeId() == 1) {
-                        transactionHistory = transactionHistory.concat("From User: ");
-//                            transaction.getAccountFrom() + "\t $ " + transaction.getAmount());
+                    if (currentUser.getUser().getId() == getId(getUsername(transaction.getAccountTo()))) {
+                        transactionHistory = transactionHistory.concat("From User: " +
+                                getUsername(transaction.getAccountFrom()) + "\t $ " + transaction.getAmount() + "\n");
                     } else {
                         transactionHistory = transactionHistory.concat("To User: " +
                                 getUsername(transaction.getAccountTo()) + "\t $ " + transaction.getAmount() + "\n");
                     }
-                } System.out.println(transactionHistory);
+                }
+                System.out.println(transactionHistory);
             }
         } catch (RestClientException e) {
             consoleService.printErrorMessage();
@@ -154,11 +155,16 @@ public class App {
         // TODO Auto-generated method stub
 
     }
+
     private String getUsername(int accountId) {
         String username = restTemplate.getForObject(API_BASE_URL + "user/account/" + accountId, String.class);
         return username;
     }
 
+    private int getId(String accountName) {
+        int id = restTemplate.getForObject(API_BASE_URL + "user/" + accountName, Integer.class);
+        return id;
+    }
 
     private void sendBucks() {
         // TODO create exception for string entry in place of $ in send; copy for request

@@ -127,13 +127,13 @@ public class JdbcUserDao implements UserDao {
     }
 
     @Override
-    public TransactionList getLog (long id) {
+    public TransactionList getLog(long id) {
         List<Transaction> transactions = new ArrayList<>();
         String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
-        "FROM transfer " +
-        "JOIN account ON account.account_id = transfer.account_from " +
-        "JOIN tenmo_user ON account.user_id = tenmo_user.user_id " +
-        "WHERE transfer.account_from = (SELECT account_id FROM account WHERE user_id = ?);";
+                "FROM transfer " +
+                "JOIN account ON account.account_id = transfer.account_from " +
+                "JOIN tenmo_user ON account.user_id = tenmo_user.user_id " +
+                "WHERE transfer.account_from = (SELECT account_id FROM account WHERE user_id = ?);";
         SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, id);
 
 //        TransactionList transactionList = new TransactionList();
@@ -142,14 +142,31 @@ public class JdbcUserDao implements UserDao {
 
 //            for (Transaction transaction : transactions) {
 //                transactions.add(transaction);
-            } TransactionList transactionList = new TransactionList();
-            transactionList.setTransactions(transactions);
+        }
+        TransactionList transactionList = new TransactionList();
+        transactionList.setTransactions(transactions);
+
+        sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, account_to, amount " +
+                "FROM transfer " +
+                "JOIN account ON account.account_id = transfer.account_to " +
+                "JOIN tenmo_user ON account.user_id = tenmo_user.user_id " +
+                "WHERE transfer.account_to = (SELECT account_id FROM account WHERE user_id = ?);";
+        rowSet = jdbcTemplate.queryForRowSet(sql, id);
+
+//        TransactionList transactionList = new TransactionList();
+        while (rowSet.next()) {
+            transactions.add(mapRowToTransaction(rowSet));
+
+//            for (Transaction transaction : transactions) {
+//                transactions.add(transaction);
+        }
+        transactionList.setTransactions(transactions);
 
         return transactionList;
     }
 
     @Override
-    public Transaction getTransferDetails (long id, long transferId) {
+    public Transaction getTransferDetails(long id, long transferId) {
         String sql = "SELECT transfer_id, transfer_type_id, transfer_status_id, account_from, tenmo_user.username AS account_to_user, amount " +
                 "FROM transfer " +
                 "JOIN account ON account.account_id = transfer.account_from " +
@@ -160,12 +177,12 @@ public class JdbcUserDao implements UserDao {
     }
 
     @Override
-    public String getUsername (int accountId) {
+    public String getUsername(int accountId) {
         String sql = "SELECT username " +
-        "FROM tenmo_user " +
-        "JOIN account ON account.user_id = tenmo_user.user_id " +
-        "WHERE account_id = ?;";
-        String username  = jdbcTemplate.queryForObject(sql, String.class, accountId);
+                "FROM tenmo_user " +
+                "JOIN account ON account.user_id = tenmo_user.user_id " +
+                "WHERE account_id = ?;";
+        String username = jdbcTemplate.queryForObject(sql, String.class, accountId);
         return username;
     }
 
